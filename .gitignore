@@ -1,0 +1,4 @@
+src/__pycache__/*
+jupyter/test_plot.ipynb
+jupyter/test.ipynb
+src/data_prepare.py
