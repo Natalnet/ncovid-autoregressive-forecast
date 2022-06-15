@@ -11,3 +11,6 @@ Run:
 
     cd ncovid-autoregressive-forecast/src
     conda env create -f environment.yml
+    conda activate ncovid-ar-forecast
+
+This environment uses miniconda3.
