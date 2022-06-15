@@ -18,7 +18,7 @@ class ExpSmoothing:
         self.begin_training = None
         self.data_used_in_trainning = None
         self.instance_region = None
-        self.save_instance_path = "../dbs/model_instances/"
+        self.save_instance_path = "../dbs/instances_object/"
         self.save_metadata_path = "../dbs/instances_metadata/"
 
     # gets data from datamanager endpoint. returns data as csv
@@ -99,7 +99,10 @@ class ExpSmoothing:
         return self.model_instances[0][2].predict(0, len(self.data_used_in_trainning)+days_ahead)
 
     # begin and end are dates in "%Y-%m-%d" format
-    def instance_forecast_by_period(self, begin_forecast, end_forecast):
+    def instance_forecast_by_period(self, begin_forecast, end_forecast, instance_object=None):
+        if instance_object == None:
+            instance_object = self.model_instances[0][2]
+
         # cast date string to datetime
         begin_raw_date = datetime.datetime.strptime(str(self.begin_raw.date()), "%Y-%m-%d")
         begin_forecast_date = datetime.datetime.strptime(begin_forecast, "%Y-%m-%d")
@@ -111,11 +114,11 @@ class ExpSmoothing:
         final_forecast_index = initial_forecast_index + forecast_period_in_days
         
         # get forecast from best instance
-        yhat = self.model_instances[0][2].predict(initial_forecast_index.days, final_forecast_index.days)
+        yhat = instance_object.predict(initial_forecast_index.days, final_forecast_index.days)
         return yhat
 
     # save best instances
-    def model_save(self):
+    def instance_save(self):
             for name, func, instance, cfg, score in self.model_instances:
                 instance_uuid = str(uuid.uuid1())
                 instance.save(self.save_instance_path+instance_uuid+".pkl")
@@ -134,3 +137,15 @@ class ExpSmoothing:
         ) as json_to_save:
             json.dump(metadata, json_to_save, indent=4)
         return json
+
+    # load local instance from id
+    def load_instance_from_id(self, instance_id):
+        import pickle
+        with open(self.save_instance_path+instance_id+".pkl", 'rb') as f:
+            instance_object = pickle.load(f)
+        return instance_object
+
+    # load local instance from metadata filename
+    def load_instance_from_local_metadata_filename(self, metadata_filename):
+        metadata = json.load(open(self.save_metadata_path+metadata_filename))
+        return self.load_instance_from_id(metadata['instance_id'])
