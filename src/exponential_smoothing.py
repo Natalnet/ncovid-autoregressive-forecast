@@ -119,10 +119,12 @@ class ExpSmoothing:
 
     # save best instances
     def instance_save(self):
-            for name, func, instance, cfg, score in self.model_instances:
-                instance_uuid = str(uuid.uuid1())
-                instance.save(self.save_instance_path+instance_uuid+".pkl")
-                self.save_metadata(instance_uuid, cfg, score)
+        metadata = None
+        for name, func, instance, cfg, score in self.model_instances:
+            instance_uuid = str(uuid.uuid1())
+            instance.save(self.save_instance_path+instance_uuid+".pkl")
+            metadata = self.save_metadata(instance_uuid, cfg, score)
+        return metadata
 
     def save_metadata(self, instance_uuid, cfg, score):
         metadata = {}
@@ -149,3 +151,6 @@ class ExpSmoothing:
     def load_instance_from_local_metadata_filename(self, metadata_filename):
         metadata = json.load(open(self.save_metadata_path+metadata_filename))
         return self.load_instance_from_id(metadata['instance_id'])
+
+    def prediction_to_weboutput(yhat, begin, end):
+        return _predictions_to_weboutput(yhat, begin, end)

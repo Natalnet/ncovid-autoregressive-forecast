@@ -1,0 +1,13 @@
+{
+    "schema": "schema",
+    "entity": "entity",
+    "region": "brl:rn",
+    "inputFeatures": "deaths",
+    "outputFeatures": "deaths",
+    "mavg_window_size": 7,
+    "begin": null,
+    "end": null,
+    "inputWindowSize": 7,
+    "outputWindowSize": 7,
+    "testSize": "testSize"
+}
