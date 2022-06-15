@@ -1,19 +1,25 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 from train_all import *
+import uuid, json
 
 class ExpSmoothing:
 
     def __init__(self) -> "ExpSmoothing":
         self.data = None
         self.input_window_size = None
-        self.models = None
+        self.n_test = 28
+        self.n_days = 7
+        self.model_type_dict = None
         self.scores_list = None
         self.model_instances = None
         self.begin_raw = None
-        self.n_test = 28
-        self.n_days = 7
+        self.end_raw = None
+        self.begin_training = None
         self.data_used_in_trainning = None
+        self.instance_region = None
+        self.save_instance_path = "../dbs/model_instances/"
+        self.save_metadata_path = "../dbs/instances_metadata/"
 
     # gets data from datamanager endpoint. returns data as csv
     def get_data(self, repo, path, feature, mavg_window_size, begin ,end):
@@ -30,9 +36,11 @@ class ExpSmoothing:
         # TODO: solve this for multivariate case
         for x in feature.split(":")[1:]:
             data = df[x].values
-        # store the first day available
+        # store first and last day available
         self.begin_raw = df.index[0]
+        self.end_raw = df.index[-1]
         self.data = data
+        self.instance_region = path
         return data
 
     # generate many configs and do a grid-search. returns the 3 best configs and its scores.
@@ -64,7 +72,7 @@ class ExpSmoothing:
         # update global variables
         self.input_window_size = input_window_size
         self.score_list = scores[:3]
-        self.models = models
+        self.model_type_dict = models
         return scores[:3]
     
     def retrain_best_models(self):
@@ -73,16 +81,18 @@ class ExpSmoothing:
         train = array(split(train, len(train)/self.input_window_size))
 
         self.data_used_in_trainning = to_series(train)
+        leftover = len(self.data) - len(self.data_used_in_trainning)
 
         models_forecast = list()
 
-        for (name, func), scores_ in zip(self.models.items(), self.scores_list):
+        for (name, func), scores_ in zip(self.model_type_dict.items(), self.scores_list):
             for cfg_str, error in scores_:
                 cfg = literal_eval(cfg_str)
                 model = func(train, cfg, True)
                 models_forecast.append((name, func, model, cfg_str, error))
 
         self.model_instances = models_forecast
+        self.begin_training = datetime.datetime.strptime(str(self.begin_raw.date()), "%Y-%m-%d") + datetime.timedelta(days=leftover)
     
     # returns the forecast of the best model trained
     def instance_forecast_ahead(self, days_ahead):
@@ -103,3 +113,24 @@ class ExpSmoothing:
         # get forecast from best instance
         yhat = self.model_instances[0][2].predict(initial_forecast_index.days, final_forecast_index.days)
         return yhat
+
+    # save best instances
+    def model_save(self):
+            for name, func, instance, cfg, score in self.model_instances:
+                instance_uuid = str(uuid.uuid1())
+                instance.save(self.save_instance_path+instance_uuid+".pkl")
+                self.save_metadata(instance_uuid, cfg, score)
+
+    def save_metadata(self, instance_uuid, cfg, score):
+        metadata = {}
+        metadata['instance_id'] = instance_uuid
+        metadata['cfg'] = cfg
+        metadata['score'] = score
+        metadata['region'] = self.instance_region
+        metadata['date_training_begin'] = str(self.begin_training.date())
+        metadata['date_training_end'] = str(self.end_raw.date())
+        with open(
+            self.save_metadata_path + "metadata_" + cfg + "_" + self.instance_region + ".json", "w"
+        ) as json_to_save:
+            json.dump(metadata, json_to_save, indent=4)
+        return json

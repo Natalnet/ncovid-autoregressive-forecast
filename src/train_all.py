@@ -268,13 +268,19 @@ def exp_smoothing_forecast(history, config, model_return=False):
 # create a set of exponential smoothing configs to try
 def exp_smoothing_configs(seasonal=[None]):
   models = list()
-  # define config lists
-  t_params = ['add', 'mul', None]
-  d_params = [True, False]
-  s_params = ['add', 'mul', None]
-  p_params = seasonal
-  b_params = [True, False]
-  r_params = [True, False]
+  # # define config lists
+  # t_params = ['add', 'mul', None]
+  # d_params = [True, False]
+  # s_params = ['add', 'mul', None]
+  # p_params = seasonal
+  # b_params = [True, False]
+  # r_params = [True, False]
+  t_params = [None]
+  d_params = [False]
+  s_params = [None]
+  p_params = [None]
+  b_params = [False]
+  r_params = [False]
   # create config instances
   for t in t_params:
     for d in d_params:
