@@ -15,7 +15,7 @@ Run:
 
 This environment uses miniconda3.
 
-## Testing API with Postman
+## Testing the API with Postman
 
 - Select the Postman agent as 'Desktop agent'
 - Run the first cell in on-line_predicting.ipynb 
