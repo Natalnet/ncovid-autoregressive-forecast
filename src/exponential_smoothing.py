@@ -104,12 +104,20 @@ class ExpSmoothing:
         return self.model_instances[0][2].predict(0, len(self.data_used_in_trainning)+days_ahead)
 
     # begin and end are dates in "%Y-%m-%d" format
-    def instance_forecast_by_period(self, begin_forecast, end_forecast, instance_object=None):
-        if instance_object == None:
+    def instance_forecast_by_period(self, begin_forecast, end_forecast, instance_id=None):
+        if instance_id == None:
             instance_object = self.model_instances[0][2]
+        else:
+            instance_object = self.load_instance_from_local_metadata_filename(str(instance_id))
+            f = open(self.save_metadata_path + str(instance_id) + '.json')
+            instance_metadata = json.load(f)
+        
+        begin_raw = instance_metadata['data_begin_date']
+        end_raw = instance_metadata['data_end_date']
 
         # cast date string to datetime
-        begin_raw_date = datetime.datetime.strptime(str(self.begin_raw.date()), "%Y-%m-%d")
+        # TODO: get dates used to train the instance
+        begin_raw_date = datetime.datetime.strptime(str(begin_raw), "%Y-%m-%d")
         begin_forecast_date = datetime.datetime.strptime(begin_forecast, "%Y-%m-%d")
         end_forecast_date = datetime.datetime.strptime(end_forecast, "%Y-%m-%d")
 
@@ -141,7 +149,7 @@ class ExpSmoothing:
         metadata['data_end_date'] = str(self.end_raw.date())
         metadata['date_of_training'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(
-            self.save_metadata_path + "metadata_" + cfg + "_" + self.instance_region + ".json", "w"
+            self.save_metadata_path + instance_uuid + ".json", "w"
         ) as json_to_save:
             json.dump(metadata, json_to_save, indent=4)
         return metadata
@@ -154,9 +162,19 @@ class ExpSmoothing:
         return instance_object
 
     # load local instance from metadata filename
-    def load_instance_from_local_metadata_filename(self, metadata_filename):
-        metadata = json.load(open(self.save_metadata_path+metadata_filename))
+    def load_instance_from_local_metadata_filename(self, instance_id):
+        print(instance_id)
+        metadata = json.load(open(self.save_metadata_path+instance_id+'.json'))
         return self.load_instance_from_id(metadata['instance_id'])
 
-    def prediction_to_weboutput(yhat, begin, end):
-        return predictions_to_weboutput_all(yhat, begin, end)
+    def predictions_to_weboutput(self, yhat, begin, end):
+        period = pd.date_range(begin, end)
+        returned_dictionary = list()
+        for date, value in zip(period, yhat):
+            returned_dictionary.append(
+                {
+                    "date": datetime.datetime.strftime(date, "%Y-%m-%d"),
+                    "prediction": str(value),
+                }
+            )
+        return returned_dictionary
