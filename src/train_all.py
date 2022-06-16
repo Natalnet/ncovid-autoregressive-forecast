@@ -292,7 +292,7 @@ def exp_smoothing_configs(seasonal=[None]):
               models.append(cfg)
   return models
 
-def _predictions_to_weboutput(y_hat, begin, end):
+def predictions_to_weboutput_all(y_hat, begin, end):
   period = pd.date_range(begin, end)
   returned_dictionary = list()
   for date, value in zip(period, y_hat):

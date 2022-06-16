@@ -6,7 +6,7 @@ import json
 import exponential_smoothing
 
 @app.route(
-    "api/v1/exp-smoothing/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
+    "/api/v1/exp-smoothing/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
     methods=["POST"],
 )
 def train_exp_smoothing(repo, path, feature, begin, end):
@@ -29,10 +29,10 @@ def train_exp_smoothing(repo, path, feature, begin, end):
     # TODO: send binary to db
     metadata_instance = handler_exp.instance_save()
     
-    return metadata_instance
+    return jsonify(metadata_instance)
 
 @app.route(
-    "api/v1/exp-smoothing/predict/model-instance/<modelInstance>",
+    "/api/v1/exp-smoothing/predict/model-instance/<modelInstance>",
     methods=["POST"],
 )
 def predict_exp_smoothing(modelInstance):

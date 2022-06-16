@@ -23,6 +23,11 @@ class ExpSmoothing:
 
     # gets data from datamanager endpoint. returns data as csv
     def get_data(self, repo, path, feature, mavg_window_size, begin ,end):
+        if begin == None:
+            begin = "2020-01-01"
+        if end == None:
+            end = "2050-01-01"
+
         file_name = "".join(
                         f"http://ncovid.natalnet.br/datamanager/"
                         f"repo/{repo}/"
@@ -132,13 +137,14 @@ class ExpSmoothing:
         metadata['cfg'] = cfg
         metadata['score'] = score
         metadata['region'] = self.instance_region
-        metadata['date_training_begin'] = str(self.begin_training.date())
-        metadata['date_training_end'] = str(self.end_raw.date())
+        metadata['data_begin_date'] = str(self.begin_training.date())
+        metadata['data_end_date'] = str(self.end_raw.date())
+        metadata['date_of_training'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(
             self.save_metadata_path + "metadata_" + cfg + "_" + self.instance_region + ".json", "w"
         ) as json_to_save:
             json.dump(metadata, json_to_save, indent=4)
-        return json
+        return metadata
 
     # load local instance from id
     def load_instance_from_id(self, instance_id):
@@ -153,4 +159,4 @@ class ExpSmoothing:
         return self.load_instance_from_id(metadata['instance_id'])
 
     def prediction_to_weboutput(yhat, begin, end):
-        return _predictions_to_weboutput(yhat, begin, end)
+        return predictions_to_weboutput_all(yhat, begin, end)
