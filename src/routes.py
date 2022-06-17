@@ -3,7 +3,8 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 import json
-import exponential_smoothing
+import autoregressive
+from autoregressive import *
 
 @app.route(
     "/api/v1/exp-smoothing/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
@@ -14,13 +15,22 @@ def train_exp_smoothing(repo, path, feature, begin, end):
     metadata_to_train = json.loads(request.form.get("metadata"))
 
     # instantiate handler object
-    handler_exp = exponential_smoothing.ExpSmoothing()
+    handler_exp = autoregressive.AutoRegressive()
+
+    # create list of configs
+    cfg_list = list()
+    # cfg_list.append(exp_smoothing_configs())
+    cfg_list.append(exp_smoothing_configs())
+
+    models = dict()
+    # models['exp'] = exp_smoothing_forecast
+    models['exp'] = exp_smoothing_forecast
 
     # get adequate data to train
     handler_exp.get_data(repo, path, feature, metadata_to_train['mavg_window_size'], begin, end)
 
     # grid-search some configurations
-    handler_exp.grid_search_exp(metadata_to_train['testSize'], metadata_to_train['inputWindowSize'])
+    handler_exp.grid_search(metadata_to_train['testSize'], metadata_to_train['inputWindowSize'], cfg_list, models)
 
     # retrain best models found by grid-search
     handler_exp.retrain_best_models()
@@ -43,7 +53,7 @@ def predict_exp_smoothing(modelInstance):
     forecast_end_date = metadata_instance['end']
 
     # instantiate handler object
-    handler_exp = exponential_smoothing.ExpSmoothing()
+    handler_exp = autoregressive.AutoRegressive()
 
     # get forecast from instance
     forecast = handler_exp.instance_forecast_by_period(forecast_begin_date, forecast_end_date, modelInstance)

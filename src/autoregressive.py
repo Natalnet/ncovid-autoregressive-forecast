@@ -3,9 +3,9 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 from train_all import *
 import uuid, json
 
-class ExpSmoothing:
+class AutoRegressive:
 
-    def __init__(self) -> "ExpSmoothing":
+    def __init__(self) -> "AutoRegressive":
         self.data = None
         self.input_window_size = None
         self.n_test = 28
@@ -49,16 +49,24 @@ class ExpSmoothing:
         return data
 
     # generate many configs and do a grid-search. returns the 3 best configs and its scores.
-    def grid_search_exp(self, data_test_size_in_days, input_window_size):
+    def grid_search(self, data_test_size_in_days, input_window_size, cfg_list, models):
         
         n_test = data_test_size_in_days
         n_days = input_window_size
 
-        cfg_list = list()
-        cfg_list.append(exp_smoothing_configs())
+        # print(cfg_list)
+        # print(models)
 
-        models = dict()
-        models['exp'] = exp_smoothing_forecast
+        # cfg_list = list()
+        # cfg_list.append(exp_smoothing_configs())
+        # # cfg_list.append(arima_configs())
+
+        # models = dict()
+        # models['exp'] = exp_smoothing_forecast
+        # # models['arima'] = arima_forecast
+
+        # print(cfg_list)
+        # print(models)
                 
         scores_list = list()
 
@@ -113,10 +121,8 @@ class ExpSmoothing:
             instance_metadata = json.load(f)
         
         begin_raw = instance_metadata['data_begin_date']
-        end_raw = instance_metadata['data_end_date']
 
         # cast date string to datetime
-        # TODO: get dates used to train the instance
         begin_raw_date = datetime.datetime.strptime(str(begin_raw), "%Y-%m-%d")
         begin_forecast_date = datetime.datetime.strptime(begin_forecast, "%Y-%m-%d")
         end_forecast_date = datetime.datetime.strptime(end_forecast, "%Y-%m-%d")
@@ -148,6 +154,7 @@ class ExpSmoothing:
         metadata['data_begin_date'] = str(self.begin_training.date())
         metadata['data_end_date'] = str(self.end_raw.date())
         metadata['date_of_training'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        metadata['model_type'] = list(self.model_type_dict.keys())[0]
         with open(
             self.save_metadata_path + instance_uuid + ".json", "w"
         ) as json_to_save:

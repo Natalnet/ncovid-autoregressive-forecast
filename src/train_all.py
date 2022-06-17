@@ -189,7 +189,8 @@ def arima_forecast(history, cfg, model_return=False):
 def arima_configs(seasonal=[0]):
   models = list()
   # define config lists
-  p_params = [7, 14, 21]
+  # p_params = [7, 14, 21]
+  p_params = [7]
   d_params = [0]
   q_params = [0]
   m_params = seasonal
@@ -200,19 +201,6 @@ def arima_configs(seasonal=[0]):
           cfg = (p, d, q)
           models.append(cfg)
   return models
-
-# arima forecast
-def arima_forecast(history, cfg, model_return=False):
-  order = cfg
-  # convert history into a univariate series
-  series = to_series(history)
-  # define the model
-  model = ARIMA(series, order=cfg)
-  # fit the model
-  model_fit = model.fit(disp=False)
-  # make forecast
-  yhat = model_fit.predict(len(series), len(series)+6)
-  return model_fit if model_return else yhat
 
 # one-step sarima forecast
 def sarima_forecast(history, config, model_return=False):
@@ -252,45 +240,45 @@ def sarima_configs(seasonal=[0]):
                   models.append(cfg)
   return models
 
-# one-step Holt Winters Exponential Smoothing forecast
-def exp_smoothing_forecast(history, config, model_return=False):
-  t,d,s,p,b,r = config
-  # define model
-  series = to_series(history)
-  series = array(series)
-  model = ExponentialSmoothing(series, trend=t, damped=d, seasonal=s, seasonal_periods=p)
-  # fit model
-  model_fit = model.fit(optimized=True, use_boxcox=b, remove_bias=r)
-  # make one step forecast
-  yhat = model_fit.predict(len(series), len(series)+6)
-  return model_fit if model_return else yhat
-
 # create a set of exponential smoothing configs to try
 def exp_smoothing_configs(seasonal=[None]):
-  models = list()
-  # # define config lists
-  # t_params = ['add', 'mul', None]
-  # d_params = [True, False]
-  # s_params = ['add', 'mul', None]
-  # p_params = seasonal
-  # b_params = [True, False]
-  # r_params = [True, False]
-  t_params = [None]
-  d_params = [False]
-  s_params = [None]
-  p_params = [None]
-  b_params = [False]
-  r_params = [False]
-  # create config instances
-  for t in t_params:
-    for d in d_params:
-      for s in s_params:
-        for p in p_params:
-          for b in b_params:
-            for r in r_params:
-              cfg = [t,d,s,p,b,r]
-              models.append(cfg)
-  return models
+    models = list()
+    # # define config lists
+    # t_params = ['add', 'mul', None]
+    # d_params = [True, False]
+    # s_params = ['add', 'mul', None]
+    # p_params = seasonal
+    # b_params = [True, False]
+    # r_params = [True, False]
+    t_params = [None]
+    d_params = [False]
+    s_params = [None]
+    p_params = [None]
+    b_params = [False]
+    r_params = [False]
+    # create config instances
+    for t in t_params:
+        for d in d_params:
+            for s in s_params:
+                for p in p_params:
+                    for b in b_params:
+                        for r in r_params:
+                            cfg = [t,d,s,p,b,r]
+                            models.append(cfg)
+    return models
+
+# one-step Holt Winters Exponential Smoothing forecast
+def exp_smoothing_forecast(history, config, model_return=False):
+    t,d,s,p,b,r = config
+    # define model
+    series = to_series(history)
+    series = array(series)
+    model = ExponentialSmoothing(series, trend=t, damped=d, seasonal=s, seasonal_periods=p)
+    # fit model
+    model_fit = model.fit(optimized=True, use_boxcox=b, remove_bias=r)
+    # make one step forecast
+    yhat = model_fit.predict(len(series), len(series)+6)
+    return model_fit if model_return else yhat
 
 def predictions_to_weboutput_all(y_hat, begin, end):
   period = pd.date_range(begin, end)
