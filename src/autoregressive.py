@@ -54,9 +54,6 @@ class AutoRegressive:
         n_test = data_test_size_in_days
         n_days = input_window_size
 
-        # print(cfg_list)
-        # print(models)
-
         # cfg_list = list()
         # cfg_list.append(exp_smoothing_configs())
         # # cfg_list.append(arima_configs())
@@ -64,9 +61,6 @@ class AutoRegressive:
         # models = dict()
         # models['exp'] = exp_smoothing_forecast
         # # models['arima'] = arima_forecast
-
-        # print(cfg_list)
-        # print(models)
                 
         scores_list = list()
 

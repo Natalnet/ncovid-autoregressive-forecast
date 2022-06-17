@@ -7,7 +7,7 @@ import autoregressive
 from autoregressive import *
 
 @app.route(
-    "/api/v1/exp-smoothing/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
+    "/api/v1/autoregressive/exp-smoothing/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
     methods=["POST"],
 )
 def train_exp_smoothing(repo, path, feature, begin, end):
@@ -15,7 +15,7 @@ def train_exp_smoothing(repo, path, feature, begin, end):
     metadata_to_train = json.loads(request.form.get("metadata"))
 
     # instantiate handler object
-    handler_exp = autoregressive.AutoRegressive()
+    handler = autoregressive.AutoRegressive()
 
     # create list of configs
     cfg_list = list()
@@ -27,25 +27,95 @@ def train_exp_smoothing(repo, path, feature, begin, end):
     models['exp'] = exp_smoothing_forecast
 
     # get adequate data to train
-    handler_exp.get_data(repo, path, feature, metadata_to_train['mavg_window_size'], begin, end)
+    handler.get_data(repo, path, feature, metadata_to_train['mavg_window_size'], begin, end)
 
     # grid-search some configurations
-    handler_exp.grid_search(metadata_to_train['testSize'], metadata_to_train['inputWindowSize'], cfg_list, models)
+    handler.grid_search(metadata_to_train['testSize'], metadata_to_train['inputWindowSize'], cfg_list, models)
 
     # retrain best models found by grid-search
-    handler_exp.retrain_best_models()
+    handler.retrain_best_models()
 
     # persist best instances. send metadata to requester
     # TODO: send binary to db
-    metadata_instance = handler_exp.instance_save()
+    metadata_instance = handler.instance_save()
     
     return jsonify(metadata_instance)
 
 @app.route(
-    "/api/v1/exp-smoothing/predict/model-instance/<modelInstance>",
+    "/api/v1/autoregressive/arima/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
     methods=["POST"],
 )
-def predict_exp_smoothing(modelInstance):
+def train_arima(repo, path, feature, begin, end):
+    # get the metadata
+    metadata_to_train = json.loads(request.form.get("metadata"))
+
+    # instantiate handler object
+    handler = autoregressive.AutoRegressive()
+
+    # create list of configs
+    cfg_list = list()
+    # cfg_list.append(exp_smoothing_configs())
+    cfg_list.append(arima_configs())
+
+    models = dict()
+    # models['exp'] = exp_smoothing_forecast
+    models['arima'] = arima_forecast
+
+    # get adequate data to train
+    handler.get_data(repo, path, feature, metadata_to_train['mavg_window_size'], begin, end)
+
+    # grid-search some configurations
+    handler.grid_search(metadata_to_train['testSize'], metadata_to_train['inputWindowSize'], cfg_list, models)
+
+    # retrain best models found by grid-search
+    handler.retrain_best_models()
+
+    # persist best instances. send metadata to requester
+    # TODO: send binary to db
+    metadata_instance = handler.instance_save()
+    
+    return jsonify(metadata_instance)
+
+@app.route(
+    "/api/v1/autoregressive/sarima/train/repo/<repo>/path/<path>/feature/<feature>/begin/<begin>/end/<end>/",
+    methods=["POST"],
+)
+def train_sarima(repo, path, feature, begin, end):
+    # get the metadata
+    metadata_to_train = json.loads(request.form.get("metadata"))
+
+    # instantiate handler object
+    handler = autoregressive.AutoRegressive()
+
+    # create list of configs
+    cfg_list = list()
+    # cfg_list.append(exp_smoothing_configs())
+    cfg_list.append(sarima_configs())
+
+    models = dict()
+    # models['exp'] = exp_smoothing_forecast
+    models['sarima'] = sarima_forecast
+
+    # get adequate data to train
+    handler.get_data(repo, path, feature, metadata_to_train['mavg_window_size'], begin, end)
+
+    # grid-search some configurations
+    handler.grid_search(metadata_to_train['testSize'], metadata_to_train['inputWindowSize'], cfg_list, models)
+
+    # retrain best models found by grid-search
+    handler.retrain_best_models()
+
+    # persist best instances. send metadata to requester
+    # TODO: send binary to db
+    metadata_instance = handler.instance_save()
+    
+    return jsonify(metadata_instance)
+
+@app.route(
+    "/api/v1/autoregressive/predict/model-instance/<modelInstance>",
+    methods=["POST"],
+)
+def predict_autoregressive(modelInstance):
     # get the metadata
     metadata_instance = json.loads(request.form.get("metadata"))
 
@@ -53,13 +123,13 @@ def predict_exp_smoothing(modelInstance):
     forecast_end_date = metadata_instance['end']
 
     # instantiate handler object
-    handler_exp = autoregressive.AutoRegressive()
+    handler = autoregressive.AutoRegressive()
 
     # get forecast from instance
-    forecast = handler_exp.instance_forecast_by_period(forecast_begin_date, forecast_end_date, modelInstance)
+    forecast = handler.instance_forecast_by_period(forecast_begin_date, forecast_end_date, modelInstance)
 
     # format forecast to send back to requester
-    response_json = jsonify(handler_exp.predictions_to_weboutput(forecast, forecast_begin_date, forecast_end_date))
+    response_json = jsonify(handler.predictions_to_weboutput(forecast, forecast_begin_date, forecast_end_date))
 
     return response_json
 
