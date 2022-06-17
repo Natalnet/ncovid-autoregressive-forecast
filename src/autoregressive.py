@@ -1,6 +1,6 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-from train_all import *
+from autoregressive_utils import *
 import uuid, json
 
 class AutoRegressive:
