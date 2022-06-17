@@ -20,6 +20,7 @@ class AutoRegressive:
         self.instance_region = None
         self.save_instance_path = "../dbs/instances_object/"
         self.save_metadata_path = "../dbs/instances_metadata/"
+        self.model_category = "autoregressive"
 
     # gets data from datamanager endpoint. returns data as csv
     def get_data(self, repo, path, feature, mavg_window_size, begin ,end):
@@ -149,6 +150,7 @@ class AutoRegressive:
         metadata['data_end_date'] = str(self.end_raw.date())
         metadata['date_of_training'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         metadata['model_type'] = list(self.model_type_dict.keys())[0]
+        metadata['model_category'] = self.model_category
         with open(
             self.save_metadata_path + instance_uuid + ".json", "w"
         ) as json_to_save:
