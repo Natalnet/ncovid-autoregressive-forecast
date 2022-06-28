@@ -9,5 +9,6 @@
     "end": null,
     "inputWindowSize": 7,
     "outputWindowSize": 7,
-    "testSize": 28
+    "testSize": 28,
+    "params":{}
 }

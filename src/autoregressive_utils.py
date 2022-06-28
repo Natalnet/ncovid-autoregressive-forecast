@@ -186,14 +186,17 @@ def arima_forecast(history, cfg, model_return=False):
   return model_fit if model_return else yhat
 
 # create a set of sarima configs to try
-def arima_configs(seasonal=[0]):
+def arima_configs(params=None):
+  if not 'p_params' in params or params==None:
+    p_params = [7]
+    d_params = [0]
+    q_params = [0]
+  else:
+    p_params = params["p_params"]
+    q_params = params["q_params"]
+    d_params = params["d_params"]
+
   models = list()
-  # define config lists
-  # p_params = [7, 14, 21]
-  p_params = [7]
-  d_params = [0]
-  q_params = [0]
-  m_params = seasonal
   # create config instances
   for p in p_params:
     for d in d_params:
@@ -215,18 +218,29 @@ def sarima_forecast(history, config, model_return=False):
   return model_fit if model_return else yhat
 
 # create a set of sarima configs to try
-def sarima_configs(seasonal=[0]):
+def sarima_configs(params=None):
+  if not 'p_params' in params or params==None:
+    # define config lists
+    p_params = [7]
+    d_params = [0]
+    q_params = [0]
+    # t_params = ['n', 'c', 't', 'ct']
+    t_params = ['n']
+    P_params = [0]
+    D_params = [0]
+    Q_params = [0]
+    m_params = [0]
+  else:
+    p_params = params["p_params"]
+    q_params = params["q_params"]
+    d_params = params["d_params"]
+    t_params = params["t_params"]
+    P_params = params["P_params"]
+    D_params = params["D_params"]
+    Q_params = params["Q_params"]
+    m_params = params["m_params"]
+
   models = list()
-  # define config lists
-  p_params = [7]
-  d_params = [0]
-  q_params = [0]
-  # t_params = ['n', 'c', 't', 'ct']
-  t_params = ['n']
-  P_params = [0]
-  D_params = [0]
-  Q_params = [0]
-  m_params = seasonal
   # create config instances
   for p in p_params:
     for d in d_params:
@@ -241,8 +255,7 @@ def sarima_configs(seasonal=[0]):
   return models
 
 # create a set of exponential smoothing configs to try
-def exp_smoothing_configs(seasonal=[None]):
-    models = list()
+def exp_smoothing_configs(params=None):
     # # define config lists
     # t_params = ['add', 'mul', None]
     # d_params = [True, False]
@@ -250,12 +263,24 @@ def exp_smoothing_configs(seasonal=[None]):
     # p_params = seasonal
     # b_params = [True, False]
     # r_params = [True, False]
-    t_params = [None]
-    d_params = [False]
-    s_params = [None]
-    p_params = [None]
-    b_params = [False]
-    r_params = [False]
+    if not 'p_params' in params or params==None:
+      # define config lists
+      t_params = [None]
+      d_params = [False]
+      s_params = [None]
+      p_params = [None]
+      b_params = [False]
+      r_params = [False]
+    else:
+      t_params = params["t_params"]
+      d_params = params["d_params"]
+      s_params = params["s_params"]
+      p_params = params["p_params"]
+      b_params = params["b_params"]
+      r_params = params["r_params"]
+
+    
+    models = list()
     # create config instances
     for t in t_params:
         for d in d_params:

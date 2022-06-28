@@ -11,6 +11,7 @@ class AutoRegressive:
         self.n_test = 28
         self.n_days = 7
         self.model_type_dict = None
+        self.model_name = None
         self.scores_list = None
         self.model_instances = None
         self.begin_raw = None
@@ -21,6 +22,8 @@ class AutoRegressive:
         self.save_instance_path = "../dbs/instances_object/"
         self.save_metadata_path = "../dbs/instances_metadata/"
         self.model_category = "autoregressive"
+        self.repo = None
+        self.features = None
 
     # gets data from datamanager endpoint. returns data as csv
     def get_data(self, repo, path, feature, mavg_window_size, begin ,end):
@@ -47,6 +50,8 @@ class AutoRegressive:
         self.end_raw = df.index[-1]
         self.data = data
         self.instance_region = path
+        self.repo = repo
+        self.features = feature
         return data
 
     # generate many configs and do a grid-search. returns the 3 best configs and its scores.
@@ -68,6 +73,7 @@ class AutoRegressive:
         for (name, func), cfg_list_ in zip(models.items(), cfg_list):
             scores = grid_search(func, self.data, cfg_list_, n_test, n_days)
             scores_list.append(scores[:3])
+            self.model_name = name
             print('done model '+name)
             print('3 best models are: ')
             # list top 3 configs
@@ -115,7 +121,7 @@ class AutoRegressive:
             f = open(self.save_metadata_path + str(instance_id) + '.json')
             instance_metadata = json.load(f)
         
-        begin_raw = instance_metadata['data_begin_date']
+        begin_raw = instance_metadata['data_infos']['data_begin_date']
 
         # cast date string to datetime
         begin_raw_date = datetime.datetime.strptime(str(begin_raw), "%Y-%m-%d")
@@ -143,14 +149,20 @@ class AutoRegressive:
     def save_metadata(self, instance_uuid, cfg, score):
         metadata = {}
         metadata['instance_id'] = instance_uuid
-        metadata['cfg'] = cfg
+        metadata['params'] = {"cfg": cfg}
+        metadata['data_infos'] = {
+            "region": self.instance_region,
+            "repo": self.repo,
+            "data_begin_date": str(self.begin_training.date()),
+            "data_end_date": str(self.end_raw.date()),
+            "inputFeatures": self.features,
+            "inputWindowSize": self.input_window_size
+        }
         metadata['score'] = score
-        metadata['region'] = self.instance_region
-        metadata['data_begin_date'] = str(self.begin_training.date())
-        metadata['data_end_date'] = str(self.end_raw.date())
         metadata['date_of_training'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        metadata['model_type'] = list(self.model_type_dict.keys())[0]
+        metadata['model_type'] = self.model_name
         metadata['model_category'] = self.model_category
+        #metadata['params'] = {metadata['cfg']}
         with open(
             self.save_metadata_path + instance_uuid + ".json", "w"
         ) as json_to_save:

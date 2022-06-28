@@ -20,16 +20,17 @@ def train_autoregressive(modelType, repo, path, feature, begin, end):
 
     cfg_func = getattr(autoregressive, f"{modelType}_configs")
     model_type_func = getattr(autoregressive, f"{modelType}_forecast")
+    params = metadata_to_train["params"]
 
     # create list of configs
     cfg_list = list()
     # cfg_list.append(exp_smoothing_configs())
     # cfg_list.append(exp_smoothing_configs())
-    cfg_list.append(cfg_func())
+    cfg_list.append(cfg_func(params))
 
     models = dict()
     # models['exp'] = exp_smoothing_forecast
-    models['exp'] = model_type_func
+    models[modelType] = model_type_func
 
     # get adequate data to train
     handler.get_data(repo, path, feature, metadata_to_train['mavg_window_size'], begin, end)
@@ -47,15 +48,15 @@ def train_autoregressive(modelType, repo, path, feature, begin, end):
     return jsonify(metadata_instance)
 
 @app.route(
-    "/api/v1/autoregressive/predict/model-instance/<modelInstance>",
-    methods=["POST"],
+    "/api/v1/model_category/autoregressive/predict/model-instance/<modelInstance>/begin/<begin>/end/<end>",
+    methods=["GET"],
 )
-def predict_autoregressive(modelInstance):
+def predict_autoregressive(modelInstance, begin, end):
     # get the metadata
-    metadata_instance = json.loads(request.form.get("metadata"))
+    #metadata_instance = json.loads(request.form.get("metadata"))
 
-    forecast_begin_date = metadata_instance['begin']
-    forecast_end_date = metadata_instance['end']
+    forecast_begin_date = begin
+    forecast_end_date = end
 
     # instantiate handler object
     handler = autoregressive.AutoRegressive()
