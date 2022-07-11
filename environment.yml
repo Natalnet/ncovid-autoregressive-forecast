@@ -247,4 +247,3 @@ dependencies:
     - numpy==1.19.2
     - sklearn==0.0
     - werkzeug==2.1.2
-prefix: /home/$USERNAME/miniconda3/envs/ncovid-ar-forecast
