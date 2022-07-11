@@ -1,0 +1,18 @@
+{
+    "instance_id": "0220ddda-0077-11ed-b71c-59c283b1da11",
+    "params": {
+        "cfg": "[None, False, None, None, False, False]"
+    },
+    "data_infos": {
+        "region": "brl:rn",
+        "repo": "p971074907",
+        "data_begin_date": "2020-05-06",
+        "data_end_date": "2022-05-03",
+        "inputFeatures": "date:newDeaths",
+        "inputWindowSize": 7
+    },
+    "score": 1.9302713596450338,
+    "date_of_training": "2022-07-10 14:37:45",
+    "model_type": "exp_smoothing",
+    "model_category": "autoregressive"
+}

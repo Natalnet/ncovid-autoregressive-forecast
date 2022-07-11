@@ -4,6 +4,6 @@ jupyter/test.ipynb
 jupyter/test_arima.ipynb
 jupyter/on-line_predicting.ipynb
 src/data_prepare.py
-dbs/instances_metadata/*
-dbs/instances_object/*
+#dbs/instances_metadata/*
+#dbs/instances_object/*
 src/arima.py
